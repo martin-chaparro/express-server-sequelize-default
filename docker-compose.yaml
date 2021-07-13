@@ -1,0 +1,129 @@
+version: '3.7'
+services:
+  mysql-database-8.0.1:
+    container_name: mysql-database-8.0.1
+    build:
+      context: ./docker/database/mysql-8-0
+    ports:
+      - 3306:3306
+    environment:
+      #            MYSQL_DATABASE: symfony_db #nombre de la DB
+      #            MYSQL_USER: user #usuario de la DB
+      #            MYSQL_PASSWORD: password #Password del usuario de la DB
+      MYSQL_ROOT_PASSWORD: root
+    command: mysqld --sql_mode="STRICT_ALL_TABLES,NO_ENGINE_SUBSTITUTION" #Este comando es para que no se alteren los engine
+    volumes:
+      - ./docker/database/mysql-8-0/data:/var/lib/mysql
+    networks:
+      - docker-network-devel
+
+  phpmyadmin-5.0.1:
+    container_name: phpmyadmin-5.0.1
+    image: phpmyadmin/phpmyadmin:5.0.1
+    restart: always
+    environment:
+      PMA_HOST: mysql-database-8.0.1
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql-database-8.0.1
+    networks:
+      - docker-network-devel
+
+  #   postgres-database-12.2:
+  #     container_name: postgres-database-12.2
+  #     image: postgres:12.2
+  #     restart: always
+  #     environment:
+  #       # POSTGRES_DB: postgres
+  #       POSTGRES_USER: root
+  #       POSTGRES_PASSWORD: root
+  #       PGDATA: /var/lib/postgresql/data
+  #     ports:
+  #       - "5432:5432"
+  #     volumes:
+  #       - ./docker/database/postgres/data:/var/lib/postgresql/data
+  #     networks:
+  #       - docker-network-devel
+
+#   pgadmin:
+#     container_name: pgadmin
+#     image: dpage/pgadmin4
+#     restart: always
+#     environment:
+#       PGADMIN_DEFAULT_EMAIL: admin@admin.com
+#       PGADMIN_DEFAULT_PASSWORD: root
+#       PGADMIN_LISTEN_PORT: 80
+#     ports:
+#       - '8080:80'
+#     depends_on:
+#       - postgres-database-12.2
+#     networks:
+#       - docker-network-devel
+
+#   back-end:
+#     container_name: back-end
+#     build:
+#       context: docker/backend/php
+#       args:
+#         UID: $U_ID
+#     environment:
+#       PHP_IDE_CONFIG: serverName=Docker
+#       PHP_XDEBUG_ENABLED: 1
+#       XDEBUG_CONFIG: remote_host=172.18.160.1 remote_port=9005 # Linux users revisar ip TODO: echo $(grep nameserver /etc/resolv.conf | cut -d ' ' -f2)
+#     #      XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9005 # MacOS users
+#     volumes:
+#       - ./:/appdata/www # Directorio de Trabajo
+#       - ./docker/backend/php/xdebug-linux.ini:/usr/local/etc/php/conf.d/xdebug.ini
+#       #      - ./docker/php/xdebug-macos.ini:/usr/local/etc/php/conf.d/xdebug.ini # MacOS users
+#       - ~/.ssh/id_rsa:/home/appuser/.ssh/id_rsa # Se guardan claves ssh
+#     depends_on:
+#       - mysql-database-8.0.1
+#     ports:
+#       - 8000:8000
+#     networks:
+#       - docker-network-devel
+
+#   nginx-web-1.19:
+#     container_name: nginx-web-1.1
+#     build:
+#       context: ./docker/nginx
+#       args:
+#         UID: $U_ID
+#     ports:
+#       - 80:80
+#     volumes:
+#       - ./public:/appdata/www/public
+#     depends_on:
+#       - back-end
+#     networks:
+#       - docker-network-devel
+
+#  rabbitmq-3.8:
+#    container_name: rabbitmq-3.8
+#    build:
+#      context: ./docker/rabbitmq
+#      args:
+#        UID: $U_ID
+#    ports:
+#      - 5672:5672
+#      - 15672:15672
+#    volumes:
+#      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+#    networks:
+#      - docker-network-devel
+
+#  mailer:
+#    container_name: mailer
+#    build:
+#      context: ./docker/mailer
+#    ports:
+#      - 1025:1025
+#      - 1080:1080
+#    networks:
+#      - docker-network-devel
+networks:
+  docker-network-devel:
+    external: true

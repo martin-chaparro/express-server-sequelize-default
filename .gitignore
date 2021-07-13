@@ -1,0 +1,7 @@
+node_modules/
+
+.env
+
+#Archivos Docker
+docker/database/mysql-8-0/data
+docker/database/posgres/data
